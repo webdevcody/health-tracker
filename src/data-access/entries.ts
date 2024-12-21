@@ -1,15 +1,14 @@
-import { database } from ".";
-import { entries, Entry, NewEntry } from "./schema";
-import { desc, eq } from "drizzle-orm";
+import { database } from "../db";
+import { entries, Entry, NewEntry } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 export async function getEntriesByPatientId(
   patientId: number
 ): Promise<Entry[]> {
-  return database
-    .select()
-    .from(entries)
-    .where(entries.patientId === patientId)
-    .orderBy(desc(entries.recordedAt));
+  return database.query.entries.findMany({
+    where: eq(entries.patientId, patientId),
+    orderBy: (entries, { desc }) => [desc(entries.recordedAt)],
+  });
 }
 
 export async function createEntry(entry: NewEntry): Promise<Entry> {

@@ -2,18 +2,13 @@
 
 import { Entry } from "@/db/schema";
 import { Card, CardContent } from "@/components/ui/card";
-import { format, addHours, isBefore, differenceInMinutes } from "date-fns";
+import { format, addHours, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Trash2, Thermometer, Pill, Plus, Timer } from "lucide-react";
+import { Trash2, Thermometer, Pill, Plus } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createDose, deleteEntry as deleteEntryAction } from "./actions";
-
-const MEDICINE_CONFIG = {
-  Motrin: { interval: 6 },
-  Tylenol: { interval: 4 },
-  "Cough Medicine": { interval: 4 },
-} as const;
+import { MEDICINE_CONFIG } from "@/config/config";
 
 interface EntryListProps {
   entries: Entry[];
@@ -145,9 +140,30 @@ function getNextDoseInfo(entry: Entry) {
 export function EntryList({ entries }: EntryListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [creatingNewDose, setCreatingNewDose] = useState<number | null>(null);
+
+  const initializeMedicineStates = useCallback((entries: Entry[]) => {
+    const initialStates: Record<number, boolean> = {};
+    entries.forEach((entry) => {
+      if (entry.type === "medicine" && entry.medicine) {
+        const interval =
+          MEDICINE_CONFIG[entry.medicine as keyof typeof MEDICINE_CONFIG]
+            ?.interval || 6;
+        const nextDoseTime = addHours(new Date(entry.recordedAt), interval);
+        const minutesRemaining = differenceInMinutes(nextDoseTime, new Date());
+        initialStates[entry.id] = minutesRemaining > 0;
+      }
+    });
+    return initialStates;
+  }, []);
+
   const [medicineStates, setMedicineStates] = useState<Record<number, boolean>>(
-    {}
+    () => initializeMedicineStates(entries)
   );
+
+  useEffect(() => {
+    setMedicineStates(initializeMedicineStates(entries));
+  }, [entries, initializeMedicineStates]);
+
   const router = useRouter();
 
   // Track time remaining states with useEffect at the list level
@@ -181,39 +197,8 @@ export function EntryList({ entries }: EntryListProps) {
       }
     });
 
-    // Initial state setup
-    entries.forEach((entry) => {
-      if (
-        entry.type === "medicine" &&
-        entry.medicine &&
-        entry.medicine in MEDICINE_CONFIG
-      ) {
-        const nextDoseTime = addHours(
-          new Date(entry.recordedAt),
-          MEDICINE_CONFIG[entry.medicine as keyof typeof MEDICINE_CONFIG]
-            .interval
-        );
-        const minutesRemaining = differenceInMinutes(nextDoseTime, new Date());
-
-        setMedicineStates((prev) => ({
-          ...prev,
-          [entry.id]: minutesRemaining > 0,
-        }));
-      }
-    });
-
     return () => intervals.forEach(clearInterval);
   }, [entries]);
-
-  const handleTimeRemainingChange = useCallback(
-    (entryId: number, hasTimeRemaining: boolean) => {
-      setMedicineStates((prev) => ({
-        ...prev,
-        [entryId]: hasTimeRemaining,
-      }));
-    },
-    []
-  );
 
   async function handleDeleteEntry(id: number) {
     try {
@@ -293,15 +278,14 @@ export function EntryList({ entries }: EntryListProps) {
                       <div className="space-y-2">
                         {entry.type === "temperature" ? (
                           <TemperatureDisplay temperature={entry.temperature} />
-                        ) : entry.type === "medicine" &&
-                          entry.medicine in MEDICINE_CONFIG ? (
+                        ) : entry.type === "medicine" && entry.medicine ? (
                           <MedicineDisplay
                             medicine={entry.medicine}
                             recordedAt={new Date(entry.recordedAt)}
                             interval={
                               MEDICINE_CONFIG[
                                 entry.medicine as keyof typeof MEDICINE_CONFIG
-                              ].interval
+                              ]?.interval || 6
                             }
                             onGiveDose={() => handleCreateNewDose(entry)}
                             isCreating={creatingNewDose === entry.id}

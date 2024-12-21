@@ -22,18 +22,39 @@ export async function createDose({
   revalidatePath(`/patients/${patientId}`);
 }
 
-export async function createTemperature({
+export async function createMedicineEntry({
+  medicine,
+  patientId,
+  recordedAt,
+}: {
+  medicine: string;
+  patientId: number;
+  recordedAt: Date;
+}) {
+  await database.insert(entries).values({
+    type: "medicine",
+    medicine,
+    patientId,
+    recordedAt,
+  });
+
+  revalidatePath(`/patients/${patientId}`);
+}
+
+export async function createTemperatureEntry({
   temperature,
   patientId,
+  recordedAt,
 }: {
   temperature: number;
   patientId: number;
+  recordedAt: Date;
 }) {
   await database.insert(entries).values({
     type: "temperature",
     temperature: temperature.toString(),
     patientId,
-    recordedAt: new Date(),
+    recordedAt,
   });
 
   revalidatePath(`/patients/${patientId}`);

@@ -30,12 +30,9 @@ import * as z from "zod";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-
-const MEDICINE_CONFIG = {
-  Motrin: { interval: 6 },
-  Tylenol: { interval: 4 },
-  "Cough Medicine": { interval: 4 },
-} as const;
+import { createMedicineEntry, createTemperatureEntry } from "./actions";
+import { MEDICINE_CONFIG } from "@/config/config";
+import { format } from "date-fns";
 
 const MEDICINES = Object.keys(
   MEDICINE_CONFIG
@@ -46,6 +43,7 @@ const formSchema = z
     type: z.enum(["medicine", "temperature"]),
     temperature: z.number().optional(),
     medicine: z.enum(MEDICINES).optional(),
+    time: z.string().min(1, "Time is required"),
   })
   .refine(
     (data) => {
@@ -74,28 +72,37 @@ export function CreateEntryDialog({ patientId }: CreateEntryDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: "temperature",
+      type: "medicine",
+      time: format(new Date(), "HH:mm"),
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/entries", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const now = new Date();
+      const [hours, minutes] = values.time.split(":").map(Number);
+      const recordedAt = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hours,
+        minutes
+      );
+
+      if (values.type === "medicine") {
+        await createMedicineEntry({
           patientId,
-          ...values,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to create entry");
+          medicine: values.medicine!,
+          recordedAt,
+        });
+      } else {
+        await createTemperatureEntry({
+          patientId,
+          temperature: values.temperature!,
+          recordedAt,
+        });
       }
-
       setOpen(false);
       router.refresh();
     } catch (error) {
@@ -110,7 +117,8 @@ export function CreateEntryDialog({ patientId }: CreateEntryDialogProps) {
       <DialogTrigger asChild>
         <Button>Add Entry</Button>
       </DialogTrigger>
-      <DialogContent>
+
+      <DialogContent aria-describedby={undefined} className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Entry</DialogTitle>
         </DialogHeader>
@@ -133,10 +141,24 @@ export function CreateEntryDialog({ patientId }: CreateEntryDialogProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="temperature">Temperature</SelectItem>
                       <SelectItem value="medicine">Medicine</SelectItem>
+                      <SelectItem value="temperature">Temperature</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Time</FormLabel>
+                  <FormControl>
+                    <Input type="time" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

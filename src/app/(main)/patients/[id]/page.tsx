@@ -15,8 +15,9 @@ interface PatientPageProps {
 }
 
 export default async function PatientPage({ params }: PatientPageProps) {
-  const user = await assertAuthenticated();
-  const patientId = parseInt(params.id);
+  await assertAuthenticated();
+  const { id } = await params;
+  const patientId = parseInt(id);
 
   const patient = await getPatientByIdUseCase(patientId);
   if (!patient) {

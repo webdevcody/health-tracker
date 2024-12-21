@@ -1,6 +1,9 @@
-import { getEntriesByPatientId, createEntry, deleteEntry } from "@/db/entries";
+import {
+  getEntriesByPatientId,
+  createEntry,
+  deleteEntry,
+} from "@/data-access/entries";
 import { Entry, NewEntry } from "@/db/schema";
-import { User } from "@/db/schema";
 
 export async function getPatientEntriesUseCase(
   patientId: number

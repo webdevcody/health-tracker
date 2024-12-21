@@ -44,7 +44,6 @@ export async function GET(request: Request): Promise<Response> {
 
     const existingAccount = await getAccountByGoogleIdUseCase(googleUser.sub);
 
-    console.log({ existingAccount });
     if (existingAccount) {
       await setSession(existingAccount.userId);
       return new Response(null, {
