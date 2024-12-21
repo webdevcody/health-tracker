@@ -8,6 +8,7 @@ import {
   serial,
   text,
   timestamp,
+  decimal,
 } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("role", ["member", "admin"]);
@@ -178,7 +179,7 @@ export const entries = pgTable(
       .notNull()
       .references(() => patients.id, { onDelete: "cascade" }),
     type: entryTypeEnum("type").notNull(),
-    temperature: integer("temperature"),
+    temperature: decimal("temperature", { precision: 4, scale: 1 }),
     medicine: text("medicine"),
     recordedAt: timestamp("recordedAt", { mode: "date" })
       .notNull()

@@ -41,7 +41,7 @@ export default async function PatientPage({ params }: PatientPageProps) {
         </div>
       </PageHeader>
 
-      <div className="max-w-7xl mx-auto my-12">
+      <div className="max-w-2xl mx-auto my-12">
         <EntryList entries={entries} />
       </div>
     </>

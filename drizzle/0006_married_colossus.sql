@@ -1,0 +1,1 @@
+ALTER TABLE "gf_entries" ALTER COLUMN "temperature" SET DATA TYPE numeric(4, 1);
