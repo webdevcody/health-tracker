@@ -7,4 +7,5 @@ export const MEDICINE_CONFIG = {
   Lorazepam: { interval: 8 },
   Hydromorphone: { interval: 3 },
   Clindamycin: { interval: 6, pills: 2 },
+  "Test Entry": { interval: 1 },
 } as const;

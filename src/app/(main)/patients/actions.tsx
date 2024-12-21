@@ -46,7 +46,7 @@ export const createEntryAction = authenticatedAction
         medicine: z.enum(MEDICINES).optional(),
       })
       .refine(
-        (data) => {
+        async (data) => {
           if (data.type === "temperature") {
             return data.temperature !== undefined;
           }

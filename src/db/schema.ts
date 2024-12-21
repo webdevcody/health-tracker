@@ -184,6 +184,7 @@ export const entries = pgTable(
     recordedAt: timestamp("recordedAt", { mode: "date" })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
+    wasGiven: boolean("wasGiven").notNull().default(false),
   },
   (table) => ({
     patientIdIdx: index("entries_patient_id_idx").on(table.patientId),

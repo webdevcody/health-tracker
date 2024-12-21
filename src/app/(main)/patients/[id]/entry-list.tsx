@@ -4,11 +4,12 @@ import { Entry } from "@/db/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { format, addHours, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Trash2, Thermometer, Pill, Plus } from "lucide-react";
+import { Trash2, Thermometer, Pill, Plus, ThumbsUp } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createDose, deleteEntry as deleteEntryAction } from "./actions";
 import { MEDICINE_CONFIG } from "@/config/config";
+import { CreateEntryDialog } from "./create-entry-dialog";
 
 interface EntryListProps {
   entries: Entry[];
@@ -69,6 +70,8 @@ function MedicineDisplay({
   onGiveDose,
   isCreating,
   entryId,
+  patientId,
+  wasGiven,
 }: {
   medicine: string;
   recordedAt: Date;
@@ -76,7 +79,10 @@ function MedicineDisplay({
   onGiveDose: () => void;
   isCreating: boolean;
   entryId: number;
+  patientId: number;
+  wasGiven: boolean;
 }) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { nextDoseTime, timeRemaining } = useTimeRemaining(
     recordedAt,
     interval
@@ -92,16 +98,26 @@ function MedicineDisplay({
             <div className="flex items-center gap-1">
               <span>Next dose due {format(nextDoseTime, "h:mm a")}</span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onGiveDose}
-              disabled={isCreating}
-              className="h-7"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Dose Given
-            </Button>
+            {!wasGiven && (
+              <CreateEntryDialog
+                patientId={patientId}
+                defaultValues={{
+                  type: "medicine",
+                  medicine: medicine as keyof typeof MEDICINE_CONFIG,
+                }}
+                previousEntryId={entryId}
+                onOpenChange={setIsDialogOpen}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isCreating}
+                  className="h-7 text-green-400"
+                >
+                  <Pill className="h-4 w-4 mr-1" />I Gave It
+                </Button>
+              </CreateEntryDialog>
+            )}
           </div>
           {timeRemaining && (
             <div className="font-medium mt-1">{timeRemaining}</div>
@@ -122,18 +138,11 @@ function getNextDoseInfo(entry: Entry) {
   const nextDoseTime = addHours(new Date(entry.recordedAt), config.interval);
   const now = new Date();
   const minutesRemaining = differenceInMinutes(nextDoseTime, now);
-  const hoursRemaining = Math.floor(Math.abs(minutesRemaining) / 60);
-  const minsRemaining = Math.abs(minutesRemaining) % 60;
-  const timeRemaining =
-    minutesRemaining < 0
-      ? `Overdue by ${hoursRemaining}h ${minsRemaining}m`
-      : `${hoursRemaining}h ${minsRemaining}m remaining`;
 
   return {
     nextDoseTime,
-    isDue: false,
+    isOverdue: minutesRemaining < 0,
     interval: config.interval,
-    timeRemaining,
   };
 }
 
@@ -250,18 +259,25 @@ export function EntryList({ entries }: EntryListProps) {
             if (entry.temperature >= 100) return "border-yellow-500";
             return "";
           }
-          if (entry.type === "medicine" && medicineStates[entry.id]) {
-            return "border-yellow-500";
+          if (entry.type === "medicine") {
+            const doseInfo = getNextDoseInfo(entry);
+            if (doseInfo && doseInfo.isOverdue && !entry.wasGiven) {
+              return "border-red-500";
+            }
+            if (medicineStates[entry.id]) {
+              return "border-yellow-500";
+            }
           }
           return "";
         })();
 
         return (
           <div key={entry.id} className="flex gap-4 items-start relative">
-            <div className="min-w-[100px] pt-8 text-sm text-muted-foreground flex flex-col">
+            <div className="min-w-[100px] pt-8 text-sm text-foreground flex flex-col">
               <div>{format(new Date(entry.recordedAt), "MMM d")}</div>
               <div>{format(new Date(entry.recordedAt), "h:mm a")}</div>
             </div>
+
             <div className="w-full">
               <Card className={`${cardStyle} transition-colors`}>
                 <CardContent className="pt-6">
@@ -290,6 +306,8 @@ export function EntryList({ entries }: EntryListProps) {
                             onGiveDose={() => handleCreateNewDose(entry)}
                             isCreating={creatingNewDose === entry.id}
                             entryId={entry.id}
+                            patientId={entry.patientId}
+                            wasGiven={entry.wasGiven}
                           />
                         ) : null}
                       </div>

@@ -26,10 +26,12 @@ export async function createMedicineEntry({
   medicine,
   patientId,
   recordedAt,
+  previousEntryId,
 }: {
   medicine: string;
   patientId: number;
   recordedAt: Date;
+  previousEntryId?: number;
 }) {
   await database.insert(entries).values({
     type: "medicine",
@@ -37,6 +39,13 @@ export async function createMedicineEntry({
     patientId,
     recordedAt,
   });
+
+  if (previousEntryId) {
+    await database
+      .update(entries)
+      .set({ wasGiven: true })
+      .where(eq(entries.id, previousEntryId));
+  }
 
   revalidatePath(`/patients/${patientId}`);
 }

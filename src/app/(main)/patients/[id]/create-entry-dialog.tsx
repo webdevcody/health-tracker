@@ -62,17 +62,36 @@ const formSchema = z
 
 interface CreateEntryDialogProps {
   patientId: number;
+  defaultValues?: {
+    type: "medicine" | "temperature";
+    medicine?: (typeof MEDICINES)[number];
+  };
+  previousEntryId?: number;
+  onOpenChange?: (open: boolean) => void;
+  children?: React.ReactNode;
 }
 
-export function CreateEntryDialog({ patientId }: CreateEntryDialogProps) {
+export function CreateEntryDialog({
+  patientId,
+  defaultValues,
+  previousEntryId,
+  onOpenChange,
+  children,
+}: CreateEntryDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: "medicine",
+      type: defaultValues?.type ?? "medicine",
+      medicine: defaultValues?.medicine,
       time: format(new Date(), "HH:mm"),
     },
   });
@@ -95,6 +114,7 @@ export function CreateEntryDialog({ patientId }: CreateEntryDialogProps) {
           patientId,
           medicine: values.medicine!,
           recordedAt,
+          previousEntryId,
         });
       } else {
         await createTemperatureEntry({
@@ -103,7 +123,7 @@ export function CreateEntryDialog({ patientId }: CreateEntryDialogProps) {
           recordedAt,
         });
       }
-      setOpen(false);
+      handleOpenChange(false);
       router.refresh();
     } catch (error) {
       console.error(error);
@@ -113,9 +133,9 @@ export function CreateEntryDialog({ patientId }: CreateEntryDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>Add Entry</Button>
+        {children ?? <Button>Add Entry</Button>}
       </DialogTrigger>
 
       <DialogContent aria-describedby={undefined} className="sm:max-w-[425px]">
