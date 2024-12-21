@@ -1,11 +1,11 @@
 version: "3.9"
 services:
-  wdc-saas-starter-kit:
+  health-tracker-db:
     image: postgres
     restart: always
-    container_name: wdc-saas-starter-kit
+    container_name: health-tracker-db
     ports:
-      - 5432:5432
+      - 5400:5432
     environment:
       POSTGRES_PASSWORD: example
       PGDATA: /data/postgres

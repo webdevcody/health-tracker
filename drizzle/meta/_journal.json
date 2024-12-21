@@ -29,6 +29,13 @@
       "when": 1729521918618,
       "tag": "0003_sad_shadow_king",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1734760710382,
+      "tag": "0004_silent_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

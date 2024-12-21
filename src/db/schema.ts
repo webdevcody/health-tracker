@@ -153,6 +153,21 @@ export const following = pgTable(
   })
 );
 
+export const patients = pgTable(
+  "gf_patients",
+  {
+    id: serial("id").primaryKey(),
+    userId: serial("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    avatarId: text("avatarId"),
+  },
+  (table) => ({
+    userIdIdx: index("patients_user_id_idx").on(table.userId),
+  })
+);
+
 /**
  * newsletters - although the emails for the newsletter are tracked in Resend, it's beneficial to also track
  * sign ups in your own database in case you decide to move to another email provider.
@@ -352,3 +367,5 @@ export type Following = typeof following.$inferSelect;
 export type GroupId = Group["id"];
 
 export type Session = typeof sessions.$inferSelect;
+export type Patient = typeof patients.$inferSelect;
+export type NewPatient = typeof patients.$inferInsert;
