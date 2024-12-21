@@ -5,7 +5,7 @@ export const appConfig: {
 };
 
 export const protectedRoutes = ["/purchases", "/dashboard"];
-export const applicationName = "Group Finder";
+export const applicationName = "Medicine Tracker";
 export const companyName = "Groupie, LLC";
 
 export const MAX_UPLOAD_IMAGE_SIZE_IN_MB = 5;

@@ -1,5 +1,7 @@
 import { getPatients, createPatient } from "@/data-access/patients";
 import { UserSession } from "./types";
+import { getPatientById } from "@/db/patients";
+import { Patient } from "@/db/schema";
 
 export async function createPatientUseCase(
   authenticatedUser: UserSession,
@@ -14,4 +16,10 @@ export async function createPatientUseCase(
 
 export async function getPatientsUseCase(authenticatedUser: UserSession) {
   return await getPatients(authenticatedUser.id.toString());
+}
+
+export async function getPatientByIdUseCase(
+  id: number
+): Promise<Patient | undefined> {
+  return getPatientById(id);
 }

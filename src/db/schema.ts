@@ -168,6 +168,27 @@ export const patients = pgTable(
   })
 );
 
+export const entryTypeEnum = pgEnum("entry_type", ["medicine", "temperature"]);
+
+export const entries = pgTable(
+  "gf_entries",
+  {
+    id: serial("id").primaryKey(),
+    patientId: serial("patientId")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    type: entryTypeEnum("type").notNull(),
+    temperature: integer("temperature"),
+    medicine: text("medicine"),
+    recordedAt: timestamp("recordedAt", { mode: "date" })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    patientIdIdx: index("entries_patient_id_idx").on(table.patientId),
+  })
+);
+
 /**
  * newsletters - although the emails for the newsletter are tracked in Resend, it's beneficial to also track
  * sign ups in your own database in case you decide to move to another email provider.
@@ -336,6 +357,17 @@ export const followingRelationship = relations(following, ({ one }) => ({
   }),
 }));
 
+export const patientRelations = relations(patients, ({ many }) => ({
+  entries: many(entries),
+}));
+
+export const entryRelations = relations(entries, ({ one }) => ({
+  patient: one(patients, {
+    fields: [entries.patientId],
+    references: [patients.id],
+  }),
+}));
+
 /**
  * TYPES
  *
@@ -369,3 +401,6 @@ export type GroupId = Group["id"];
 export type Session = typeof sessions.$inferSelect;
 export type Patient = typeof patients.$inferSelect;
 export type NewPatient = typeof patients.$inferInsert;
+
+export type Entry = typeof entries.$inferSelect;
+export type NewEntry = typeof entries.$inferInsert;
