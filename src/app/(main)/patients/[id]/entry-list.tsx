@@ -12,6 +12,17 @@ import { MEDICINE_CONFIG } from "@/config/config";
 import { CreateEntryDialog } from "./create-entry-dialog";
 import { EntryCard } from "./entry-card";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface EntryListProps {
   entries: Entry[];
@@ -60,6 +71,11 @@ function useTimeRemaining(recordedAt: Date, intervalHours: number) {
 export function EntryList({ entries }: EntryListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [creatingNewDose, setCreatingNewDose] = useState<number | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedDose, setSelectedDose] = useState<{
+    patientId: number;
+    medicine: keyof typeof MEDICINE_CONFIG;
+  } | null>(null);
 
   // Group entries by medicine type to find latest doses
   const latestDosesByMedicine = entries.reduce(
@@ -235,39 +251,120 @@ export function EntryList({ entries }: EntryListProps) {
                   )}
                 >
                   <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <div className="mt-1 text-muted-foreground">
-                        <Pill className="h-5 w-5" />
+                    <div className="flex items-start justify-between">
+                      {/* Left Column */}
+                      <div className="flex items-start gap-4">
+                        <div className="mt-1 text-muted-foreground">
+                          <Pill className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-lg">
+                            {upcomingDose!.medicine}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Last dose given at{" "}
+                            {format(
+                              new Date(upcomingDose!.lastDose.recordedAt),
+                              "h:mm a"
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <div className="text-lg">
-                          {upcomingDose!.medicine}
-                          <span className="text-muted-foreground ml-2">
-                            {upcomingDose!.isOverdue
-                              ? "Ready to give now"
-                              : `Can give at ${format(upcomingDose!.nextDoseTime, "h:mm a")}`}
-                          </span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Last dose given at{" "}
-                          {format(
-                            new Date(upcomingDose!.lastDose.recordedAt),
-                            "h:mm a"
+
+                      {/* Right Column */}
+                      <div className="flex flex-col items-end gap-2">
+                        <div
+                          className={cn(
+                            "text-sm",
+                            upcomingDose!.isOverdue
+                              ? "text-green-500"
+                              : "text-red-500"
                           )}
-                        </div>
-                        <CreateEntryDialog
-                          patientId={upcomingDose!.lastDose.patientId}
-                          defaultValues={{
-                            type: "medicine",
-                            medicine: upcomingDose!
-                              .medicine as keyof typeof MEDICINE_CONFIG,
-                          }}
                         >
-                          <Button variant="outline" size="sm" className="mt-2">
-                            <Pill className="h-4 w-4 mr-2" />
-                            Mark as Given
-                          </Button>
-                        </CreateEntryDialog>
+                          {upcomingDose!.isOverdue
+                            ? `Due at ${format(upcomingDose!.nextDoseTime, "h:mm a")}`
+                            : `Ready after ${format(upcomingDose!.nextDoseTime, "h:mm a")}`}
+                        </div>
+                        {upcomingDose!.isOverdue ? (
+                          <CreateEntryDialog
+                            patientId={upcomingDose!.lastDose.patientId}
+                            defaultValues={{
+                              type: "medicine",
+                              medicine: upcomingDose!
+                                .medicine as keyof typeof MEDICINE_CONFIG,
+                            }}
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={cn(
+                                "text-green-500 border-green-500 hover:bg-green-500/10",
+                                "transition-colors"
+                              )}
+                            >
+                              <Pill className="h-4 w-4 mr-2" />
+                              Give Dose
+                            </Button>
+                          </CreateEntryDialog>
+                        ) : (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className={cn(
+                                  "text-red-500 border-red-500 hover:bg-red-500/10",
+                                  "transition-colors"
+                                )}
+                              >
+                                <Pill className="h-4 w-4 mr-2" />
+                                Give Dose
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  ⚠️ Early Dose Warning
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="space-y-2">
+                                  <p>
+                                    You are attempting to give{" "}
+                                    {upcomingDose!.medicine} before it is due.
+                                  </p>
+                                  <p>
+                                    Next dose should be given at{" "}
+                                    {format(
+                                      upcomingDose!.nextDoseTime,
+                                      "h:mm a"
+                                    )}
+                                    .
+                                  </p>
+                                  <p className="font-semibold text-red-500">
+                                    Giving medication too early can be
+                                    dangerous. Are you sure you want to proceed?
+                                  </p>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => {
+                                    setSelectedDose({
+                                      patientId:
+                                        upcomingDose!.lastDose.patientId,
+                                      medicine: upcomingDose!
+                                        .medicine as keyof typeof MEDICINE_CONFIG,
+                                    });
+                                    setShowCreateDialog(true);
+                                  }}
+                                  className="bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                  Yes, Give Dose Now
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -282,6 +379,25 @@ export function EntryList({ entries }: EntryListProps) {
           )}
         </div>
       </div>
+
+      {/* Create Entry Dialog */}
+      {selectedDose && (
+        <CreateEntryDialog
+          patientId={selectedDose.patientId}
+          defaultValues={{
+            type: "medicine",
+            medicine: selectedDose.medicine,
+          }}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedDose(null);
+            }
+            setShowCreateDialog(open);
+          }}
+        >
+          <span style={{ display: "none" }} />
+        </CreateEntryDialog>
+      )}
 
       {/* Doses Given Section */}
       <div>
