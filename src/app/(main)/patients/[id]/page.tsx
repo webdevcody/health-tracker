@@ -33,7 +33,7 @@ export default async function PatientPage({ params }: PatientPageProps) {
           <h1
             className={cn(pageTitleStyles, "flex justify-between items-center")}
           >
-            {patient.name} {">"} Med History
+            {patient.name}'s Med History
           </h1>
 
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">

@@ -27,51 +27,20 @@ export function MedicineDisplay({
   patientId,
   wasGiven,
 }: MedicineDisplayProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { nextDoseTime, timeRemaining } = useTimeRemaining(
-    recordedAt,
-    interval
-  );
-
   const givenAt = format(new Date(recordedAt), "h:mm a");
 
   return (
     <div className="space-y-2">
       <div className="text-lg">
-        {medicine} @ {givenAt}
+        {medicine}
+        <span className="text-muted-foreground">
+          {" @ "}
+          {givenAt}
+        </span>
       </div>
-      <div className="space-y-1 text-sm">
-        <div className="text-muted-foreground">Every {interval} hours</div>
-        <div className="text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <span>Next dose due {format(nextDoseTime, "h:mm a")}</span>
-            </div>
-            {!wasGiven && (
-              <CreateEntryDialog
-                patientId={patientId}
-                defaultValues={{
-                  type: "medicine",
-                  medicine: medicine as keyof typeof MEDICINE_CONFIG,
-                }}
-                previousEntryId={entryId}
-                onOpenChange={setIsDialogOpen}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={isCreating}
-                  className="h-7 text-green-400"
-                >
-                  <Pill className="h-4 w-4 mr-1" />
-                  Meds Given
-                </Button>
-              </CreateEntryDialog>
-            )}
-          </div>
-          {timeRemaining && (
-            <div className="font-medium mt-1">{timeRemaining}</div>
-          )}
+      <div className="text-sm text-muted-foreground">
+        <div className="text-xs text-muted-foreground/75">
+          Repeats every {interval} hours
         </div>
       </div>
     </div>

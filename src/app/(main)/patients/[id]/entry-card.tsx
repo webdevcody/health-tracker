@@ -50,15 +50,6 @@ export function EntryCard({
       if (temp >= 100) return "border-yellow-500";
       return "";
     }
-    if (entry.type === "medicine") {
-      const doseInfo = getNextDoseInfo(entry);
-      if (doseInfo && doseInfo.isOverdue && !entry.wasGiven) {
-        return "border-red-500";
-      }
-      if (medicineStates[entry.id]) {
-        return "border-yellow-500";
-      }
-    }
     return "";
   })();
 
@@ -79,6 +70,7 @@ export function EntryCard({
               {entry.type === "temperature" ? (
                 <TemperatureDisplay
                   temperature={parseFloat(entry.temperature as string)}
+                  recordedAt={new Date(entry.recordedAt)}
                 />
               ) : entry.type === "medicine" && entry.medicine ? (
                 <MedicineDisplay
