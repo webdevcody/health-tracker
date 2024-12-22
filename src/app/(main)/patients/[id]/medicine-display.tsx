@@ -33,9 +33,13 @@ export function MedicineDisplay({
     interval
   );
 
+  const givenAt = format(new Date(recordedAt), "h:mm a");
+
   return (
     <div className="space-y-2">
-      <div className="text-lg font-semibold">{medicine}</div>
+      <div className="text-lg">
+        {medicine} @ {givenAt}
+      </div>
       <div className="space-y-1 text-sm">
         <div className="text-muted-foreground">Every {interval} hours</div>
         <div className="text-muted-foreground">
@@ -59,7 +63,8 @@ export function MedicineDisplay({
                   disabled={isCreating}
                   className="h-7 text-green-400"
                 >
-                  <Pill className="h-4 w-4 mr-1" />I Gave It
+                  <Pill className="h-4 w-4 mr-1" />
+                  Meds Given
                 </Button>
               </CreateEntryDialog>
             )}

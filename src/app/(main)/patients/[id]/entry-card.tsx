@@ -3,9 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Thermometer, Pill } from "lucide-react";
 import { MEDICINE_CONFIG } from "@/config/config";
-import { addHours, differenceInMinutes } from "date-fns";
+import { addHours, differenceInMinutes, format } from "date-fns";
 import { TemperatureDisplay } from "./temperature-display";
 import { MedicineDisplay } from "./medicine-display";
+import { EditEntryDialog } from "./edit-entry-dialog";
 
 interface EntryCardProps {
   entry: Entry;
@@ -98,15 +99,18 @@ export function EntryCard({
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-destructive hover:text-destructive/90"
-            onClick={() => onDelete(entry.id)}
-            disabled={deletingId === entry.id}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <EditEntryDialog entry={entry} />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-destructive/90"
+              onClick={() => onDelete(entry.id)}
+              disabled={deletingId === entry.id}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

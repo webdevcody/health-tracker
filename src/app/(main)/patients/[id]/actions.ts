@@ -81,3 +81,29 @@ export async function deleteEntry(id: number) {
     revalidatePath(`/patients/${entry.patientId}`);
   }
 }
+
+export async function updateEntry({
+  id,
+  type,
+  medicine,
+  temperature,
+  recordedAt,
+}: {
+  id: number;
+  type: "medicine" | "temperature";
+  medicine?: string;
+  temperature?: number;
+  recordedAt: Date;
+}) {
+  await database
+    .update(entries)
+    .set({
+      type,
+      medicine: type === "medicine" ? medicine : null,
+      temperature: type === "temperature" ? temperature?.toString() : null,
+      recordedAt,
+    })
+    .where(eq(entries.id, id));
+
+  revalidatePath(`/patients/${id}`);
+}

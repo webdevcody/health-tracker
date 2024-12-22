@@ -163,12 +163,7 @@ export function EntryList({ entries }: EntryListProps) {
     <div className="space-y-4 relative">
       <div className="absolute left-[26px] top-8 bottom-8 w-px bg-border" />
       {entries.map((entry) => (
-        <div key={entry.id} className="flex gap-4 items-start relative">
-          <div className="min-w-[100px] pt-8 text-sm text-foreground flex flex-col">
-            <div>{format(new Date(entry.recordedAt), "MMM d")}</div>
-            <div>{format(new Date(entry.recordedAt), "h:mm a")}</div>
-          </div>
-
+        <div key={entry.id} className="relative">
           <div className="w-full">
             <EntryCard
               entry={entry}

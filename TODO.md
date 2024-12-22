@@ -1,4 +1,7 @@
 # TODO
 
-- [ ] add patient table
-- [ ] a user can create a new patient
+- [ ] ability to edit a entry
+
+# Refactor
+
+- [ ]
