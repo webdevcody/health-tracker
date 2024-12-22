@@ -303,7 +303,7 @@ export function EntryList({ entries }: EntryListProps) {
                               )}
                             >
                               <Pill className="h-4 w-4 mr-2" />
-                              Give Dose
+                              Record Dose Given
                             </Button>
                           </CreateEntryDialog>
                         ) : (
@@ -318,7 +318,7 @@ export function EntryList({ entries }: EntryListProps) {
                                 )}
                               >
                                 <Pill className="h-4 w-4 mr-2" />
-                                Give Dose
+                                Record Early Dose Given
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -359,7 +359,7 @@ export function EntryList({ entries }: EntryListProps) {
                                   }}
                                   className="bg-red-600 hover:bg-red-700 text-white"
                                 >
-                                  Yes, Give Dose Now
+                                  Yes, Record Dose Now
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
