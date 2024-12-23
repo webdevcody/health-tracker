@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface EntryListProps {
   entries: Entry[];
@@ -234,151 +235,208 @@ export function EntryList({ entries }: EntryListProps) {
 
   return (
     <div className="space-y-8">
-      {/* Upcoming Doses Section */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Upcoming Doses</h2>
-        <div className="space-y-4 relative">
-          <div className="absolute left-[26px] top-8 bottom-8 w-px bg-border" />
-          {upcomingDoses.map((upcomingDose) => (
-            <div key={upcomingDose!.medicine} className="relative">
-              <div className="w-full">
-                <Card
-                  className={cn(
-                    "transition-colors",
-                    upcomingDose!.isOverdue
-                      ? "border-green-500"
-                      : "border-red-500"
-                  )}
-                >
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      {/* Left Column */}
-                      <div className="flex items-start gap-4">
-                        <div className="mt-1 text-muted-foreground">
-                          <Pill className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="text-lg">
-                            {upcomingDose!.medicine}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Last dose at{" "}
-                            {format(
-                              new Date(upcomingDose!.lastDose.recordedAt),
-                              "h:mm a ', ' MMM d, yyyy"
-                            )}
-                          </div>
-                        </div>
-                      </div>
+      <Tabs defaultValue="upcoming" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="upcoming">Upcoming Doses</TabsTrigger>
+          <TabsTrigger value="past">Past Doses</TabsTrigger>
+          <TabsTrigger value="temperature">Temperature</TabsTrigger>
+        </TabsList>
 
-                      {/* Right Column */}
-                      <div className="flex flex-col items-end gap-2">
-                        <div
-                          className={cn(
-                            "text-sm",
-                            upcomingDose!.isOverdue
-                              ? "text-green-500"
-                              : "text-red-500"
-                          )}
-                        >
-                          {upcomingDose!.isOverdue
-                            ? `Due at ${format(upcomingDose!.nextDoseTime, "h:mm a")}`
-                            : `Ready after ${format(upcomingDose!.nextDoseTime, "h:mm a")}`}
-                        </div>
-                        {upcomingDose!.isOverdue ? (
-                          <CreateEntryDialog
-                            patientId={upcomingDose!.lastDose.patientId}
-                            defaultValues={{
-                              type: "medicine",
-                              medicine: upcomingDose!
-                                .medicine as keyof typeof MEDICINE_CONFIG,
-                            }}
-                          >
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className={cn(
-                                "text-green-500 border-green-500 hover:bg-green-500/10",
-                                "transition-colors"
+        <TabsContent value="upcoming" className="mt-6">
+          <div className="space-y-4 relative">
+            <div className="absolute left-[26px] top-8 bottom-8 w-px bg-border" />
+            {upcomingDoses.map((upcomingDose) => (
+              <div key={upcomingDose!.medicine} className="relative">
+                <div className="w-full">
+                  <Card
+                    className={cn(
+                      "transition-colors",
+                      upcomingDose!.isOverdue
+                        ? "border-green-500"
+                        : "border-red-500"
+                    )}
+                  >
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between">
+                        {/* Left Column */}
+                        <div className="flex items-start gap-4">
+                          <div className="mt-1 text-muted-foreground">
+                            <Pill className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="text-lg">
+                              {upcomingDose!.medicine}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Last dose at{" "}
+                              {format(
+                                new Date(upcomingDose!.lastDose.recordedAt),
+                                "h:mm a ', ' MMM d, yyyy"
                               )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="flex flex-col items-end gap-2">
+                          <div
+                            className={cn(
+                              "text-sm",
+                              upcomingDose!.isOverdue
+                                ? "text-green-500"
+                                : "text-red-500"
+                            )}
+                          >
+                            {upcomingDose!.isOverdue
+                              ? `Due at ${format(upcomingDose!.nextDoseTime, "h:mm a")}`
+                              : `Ready after ${format(upcomingDose!.nextDoseTime, "h:mm a")}`}
+                          </div>
+                          {upcomingDose!.isOverdue ? (
+                            <CreateEntryDialog
+                              patientId={upcomingDose!.lastDose.patientId}
+                              defaultValues={{
+                                type: "medicine",
+                                medicine: upcomingDose!
+                                  .medicine as keyof typeof MEDICINE_CONFIG,
+                              }}
                             >
-                              <Pill className="h-4 w-4 mr-2" />
-                              Record Dose Given
-                            </Button>
-                          </CreateEntryDialog>
-                        ) : (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className={cn(
-                                  "text-red-500 border-red-500 hover:bg-red-500/10",
+                                  "text-green-500 border-green-500 hover:bg-green-500/10",
                                   "transition-colors"
                                 )}
                               >
                                 <Pill className="h-4 w-4 mr-2" />
-                                Record Early Dose Given
+                                Record Dose Given
                               </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  ⚠️ Early Dose Warning
-                                </AlertDialogTitle>
-                                <AlertDialogDescription className="space-y-2">
-                                  <p>
-                                    You are attempting to give{" "}
-                                    {upcomingDose!.medicine} before it is due.
-                                  </p>
-                                  <p>
-                                    Next dose should be given at{" "}
-                                    {format(
-                                      upcomingDose!.nextDoseTime,
-                                      "h:mm a"
-                                    )}
-                                    .
-                                  </p>
-                                  <p className="font-semibold text-red-500">
-                                    Giving medication too early can be
-                                    dangerous. Are you sure you want to proceed?
-                                  </p>
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => {
-                                    setSelectedDose({
-                                      patientId:
-                                        upcomingDose!.lastDose.patientId,
-                                      medicine: upcomingDose!
-                                        .medicine as keyof typeof MEDICINE_CONFIG,
-                                    });
-                                    setShowCreateDialog(true);
-                                  }}
-                                  className="bg-red-600 hover:bg-red-700 text-white"
+                            </CreateEntryDialog>
+                          ) : (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={cn(
+                                    "text-red-500 border-red-500 hover:bg-red-500/10",
+                                    "transition-colors"
+                                  )}
                                 >
-                                  Yes, Record Dose Now
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
+                                  <Pill className="h-4 w-4 mr-2" />
+                                  Record Early Dose Given
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    ⚠️ Early Dose Warning
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="space-y-2">
+                                    <p>
+                                      You are attempting to give{" "}
+                                      {upcomingDose!.medicine} before it is due.
+                                    </p>
+                                    <p>
+                                      Next dose should be given at{" "}
+                                      {format(
+                                        upcomingDose!.nextDoseTime,
+                                        "h:mm a"
+                                      )}
+                                      .
+                                    </p>
+                                    <p className="font-semibold text-red-500">
+                                      Giving medication too early can be
+                                      dangerous. Are you sure you want to
+                                      proceed?
+                                    </p>
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => {
+                                      setSelectedDose({
+                                        patientId:
+                                          upcomingDose!.lastDose.patientId,
+                                        medicine: upcomingDose!
+                                          .medicine as keyof typeof MEDICINE_CONFIG,
+                                      });
+                                      setShowCreateDialog(true);
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                  >
+                                    Yes, Record Dose Now
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </div>
-          ))}
-          {upcomingDoses.length === 0 && (
-            <div className="text-muted-foreground text-sm">
-              No upcoming doses.
-            </div>
-          )}
-        </div>
-      </div>
+            ))}
+            {upcomingDoses.length === 0 && (
+              <div className="text-muted-foreground text-sm">
+                No upcoming doses.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="past" className="mt-6">
+          <div className="space-y-4 relative">
+            <div className="absolute left-[26px] top-8 bottom-8 w-px bg-border" />
+            {dosesGiven.map((entry) => (
+              <div key={entry.id} className="relative">
+                <div className="w-full">
+                  <EntryCard
+                    entry={entry}
+                    medicineStates={medicineStates}
+                    onDelete={handleDeleteEntry}
+                    onCreateNewDose={handleCreateNewDose}
+                    deletingId={deletingId}
+                    creatingNewDose={creatingNewDose}
+                  />
+                </div>
+              </div>
+            ))}
+            {dosesGiven.length === 0 && (
+              <div className="text-muted-foreground text-sm">
+                No doses have been given yet.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="temperature" className="mt-6">
+          <div className="space-y-4 relative">
+            <div className="absolute left-[26px] top-8 bottom-8 w-px bg-border" />
+            {temperatures.map((entry) => (
+              <div key={entry.id} className="relative">
+                <div className="w-full">
+                  <EntryCard
+                    entry={entry}
+                    medicineStates={medicineStates}
+                    onDelete={handleDeleteEntry}
+                    onCreateNewDose={handleCreateNewDose}
+                    deletingId={deletingId}
+                    creatingNewDose={creatingNewDose}
+                  />
+                </div>
+              </div>
+            ))}
+            {temperatures.length === 0 && (
+              <div className="text-muted-foreground text-sm">
+                No temperature readings recorded yet.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Create Entry Dialog */}
       {selectedDose && (
@@ -397,57 +455,6 @@ export function EntryList({ entries }: EntryListProps) {
         >
           <span style={{ display: "none" }} />
         </CreateEntryDialog>
-      )}
-
-      {/* Doses Given Section */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Doses Given</h2>
-        <div className="space-y-4 relative">
-          <div className="absolute left-[26px] top-8 bottom-8 w-px bg-border" />
-          {dosesGiven.map((entry) => (
-            <div key={entry.id} className="relative">
-              <div className="w-full">
-                <EntryCard
-                  entry={entry}
-                  medicineStates={medicineStates}
-                  onDelete={handleDeleteEntry}
-                  onCreateNewDose={handleCreateNewDose}
-                  deletingId={deletingId}
-                  creatingNewDose={creatingNewDose}
-                />
-              </div>
-            </div>
-          ))}
-          {dosesGiven.length === 0 && (
-            <div className="text-muted-foreground text-sm">
-              No doses have been given yet.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Temperature Section */}
-      {temperatures.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Temperature History</h2>
-          <div className="space-y-4 relative">
-            <div className="absolute left-[26px] top-8 bottom-8 w-px bg-border" />
-            {temperatures.map((entry) => (
-              <div key={entry.id} className="relative">
-                <div className="w-full">
-                  <EntryCard
-                    entry={entry}
-                    medicineStates={medicineStates}
-                    onDelete={handleDeleteEntry}
-                    onCreateNewDose={handleCreateNewDose}
-                    deletingId={deletingId}
-                    creatingNewDose={creatingNewDose}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       )}
     </div>
   );
