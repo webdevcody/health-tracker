@@ -30,9 +30,10 @@ export default async function PatientPage({ params }: PatientPageProps) {
     <>
       <PageHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
-          <h1
-            className={cn(pageTitleStyles, "flex justify-between items-center")}
-          >
+          <h1 className={cn(pageTitleStyles, "flex items-center gap-4")}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-white bg-blue-500 text-lg font-semibold">
+              {patient.name.charAt(0).toUpperCase()}
+            </div>
             {patient.name}'s Med History
           </h1>
 

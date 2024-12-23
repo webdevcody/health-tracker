@@ -27,21 +27,14 @@ export function MedicineDisplay({
   patientId,
   wasGiven,
 }: MedicineDisplayProps) {
-  const givenAt = format(new Date(recordedAt), "h:mm a");
-
   return (
     <div className="space-y-2">
-      <div className="text-lg">
-        {medicine}
-        <span className="text-muted-foreground">
-          {" @ "}
-          {givenAt}
-        </span>
-      </div>
+      <div className="text-lg">{medicine}</div>
       <div className="text-sm text-muted-foreground">
-        <div className="text-xs text-muted-foreground/75">
-          Repeats every {interval} hours
-        </div>
+        Given at {format(recordedAt, "h:mm a ', ' MMM d, yyyy")}
+      </div>
+      <div className="text-xs text-muted-foreground/75">
+        Repeats every {interval} hours
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createMedicineEntry, createTemperatureEntry } from "./actions";
@@ -82,11 +82,6 @@ export function CreateEntryDialog({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    onOpenChange?.(newOpen);
-  };
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -95,6 +90,18 @@ export function CreateEntryDialog({
       time: format(new Date(), "HH:mm"),
     },
   });
+
+  // Update the time field whenever the dialog opens
+  useEffect(() => {
+    if (open) {
+      form.setValue("time", format(new Date(), "HH:mm"));
+    }
+  }, [open, form]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {

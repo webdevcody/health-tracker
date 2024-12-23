@@ -8,5 +8,6 @@ export const MEDICINE_CONFIG = {
   Hydromorphone: { interval: 3 },
   Clindamycin: { interval: 6, pills: 2 },
   Zyrtec: { interval: 24 },
+  "Mucinex (Kids)": { interval: 4 },
   "Test Entry": { interval: 1 },
 } as const;
