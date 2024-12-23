@@ -262,10 +262,10 @@ export function EntryList({ entries }: EntryListProps) {
                             {upcomingDose!.medicine}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Last dose given at{" "}
+                            Last dose at{" "}
                             {format(
                               new Date(upcomingDose!.lastDose.recordedAt),
-                              "h:mm a"
+                              "h:mm a ', ' MMM d, yyyy"
                             )}
                           </div>
                         </div>
