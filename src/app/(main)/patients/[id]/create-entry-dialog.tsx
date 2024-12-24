@@ -42,7 +42,7 @@ const formSchema = z
   .object({
     type: z.enum(["medicine", "temperature"]),
     temperature: z.number().optional(),
-    medicine: z.enum(MEDICINES).optional(),
+    medicine: z.string().optional(),
     time: z.string().min(1, "Time is required"),
   })
   .refine(
@@ -51,7 +51,10 @@ const formSchema = z
         return data.temperature !== undefined;
       }
       if (data.type === "medicine") {
-        return data.medicine !== undefined;
+        return (
+          data.medicine !== undefined &&
+          MEDICINES.includes(data.medicine as any)
+        );
       }
       return false;
     },
@@ -69,6 +72,7 @@ interface CreateEntryDialogProps {
   previousEntryId?: number;
   onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
+  open?: boolean;
 }
 
 export function CreateEntryDialog({
@@ -77,8 +81,10 @@ export function CreateEntryDialog({
   previousEntryId,
   onOpenChange,
   children,
+  open,
 }: CreateEntryDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open !== undefined ? open : internalOpen;
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -93,13 +99,15 @@ export function CreateEntryDialog({
 
   // Update the time field whenever the dialog opens
   useEffect(() => {
-    if (open) {
+    if (isOpen) {
       form.setValue("time", format(new Date(), "HH:mm"));
     }
-  }, [open, form]);
+  }, [isOpen, form]);
 
   const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
+    if (open === undefined) {
+      setInternalOpen(newOpen);
+    }
     onOpenChange?.(newOpen);
   };
 
@@ -140,7 +148,7 @@ export function CreateEntryDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children ?? <Button>Add Entry</Button>}
       </DialogTrigger>

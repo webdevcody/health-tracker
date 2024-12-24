@@ -72,11 +72,11 @@ function useTimeRemaining(recordedAt: Date, intervalHours: number) {
 export function EntryList({ entries }: EntryListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [creatingNewDose, setCreatingNewDose] = useState<number | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDose, setSelectedDose] = useState<{
     patientId: number;
     medicine: keyof typeof MEDICINE_CONFIG;
   } | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Group entries by medicine type to find latest doses
   const latestDosesByMedicine = entries.reduce(
@@ -133,8 +133,6 @@ export function EntryList({ entries }: EntryListProps) {
       (a, b) =>
         new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
     );
-
-  const router = useRouter();
 
   const initializeMedicineStates = useCallback((entries: Entry[]) => {
     const initialStates: Record<number, boolean> = {};
@@ -197,7 +195,6 @@ export function EntryList({ entries }: EntryListProps) {
     try {
       setDeletingId(id);
       await deleteEntryAction(id);
-      router.refresh();
     } catch (error) {
       console.error("Error deleting entry:", error);
     } finally {
@@ -217,7 +214,6 @@ export function EntryList({ entries }: EntryListProps) {
 
       // Scroll to top after creating new dose
       window.scrollTo({ top: 0, behavior: "smooth" });
-      router.refresh();
     } catch (error) {
       console.error("Error creating new dose:", error);
     } finally {
@@ -452,6 +448,7 @@ export function EntryList({ entries }: EntryListProps) {
             }
             setShowCreateDialog(open);
           }}
+          open={showCreateDialog}
         >
           <span style={{ display: "none" }} />
         </CreateEntryDialog>
